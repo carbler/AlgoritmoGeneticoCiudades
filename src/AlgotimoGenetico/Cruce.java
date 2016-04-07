@@ -9,6 +9,6 @@ package AlgotimoGenetico;
  *
  * @author erley
  */
-public class bocadeverga {
+public class Cruce {
     
 }
