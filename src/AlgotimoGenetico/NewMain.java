@@ -30,6 +30,8 @@ public class NewMain {
         
         double [][] ev = e.evaluarMuestra(m);
         
+        double [][] o = e.getGeneracionOrdenada();
+        
         for (int i = 0; i < m.length; i++) {
             String Linea="";
             for (int j = 0; j < m[i].length; j++) {
@@ -42,6 +44,16 @@ public class NewMain {
             String Linea="";
             for (int j = 0; j < ev[i].length; j++) {
                Linea = Linea+ev[i][j]+" ";
+            }
+            System.out.println(Linea);
+        }
+        
+        System.out.println("***************************");
+        
+        for (int i = 0; i < o.length; i++) {
+            String Linea="";
+            for (int j = 0; j < o[i].length; j++) {
+                Linea = Linea+o[i][j]+" ";
             }
             System.out.println(Linea);
         }
