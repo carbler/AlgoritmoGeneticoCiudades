@@ -28,7 +28,7 @@ public class NewMain {
         
         double[][] m = muestra.muestra(4);
         
-        double [][] ev = e.evaluarMuestra(m);
+        double [][] ev = e.getDatosevaluarMuestra(m);
         
         double [][] o = e.getGeneracionOrdenada();
         
