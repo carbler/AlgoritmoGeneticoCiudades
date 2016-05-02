@@ -16,15 +16,70 @@ import java.util.ArrayList;
 public class Cruce {
     Convertidor conver = new Convertidor();
     ArrayList<Object[]> IndividuoArmado = new ArrayList<>();
-    int longitud = 0;
+    int longitud = 0, inicio = 0, fin = 0;
     ArrayList<Object> puntos = new ArrayList<>();
+    ArrayList<Object> inicio_variable = new ArrayList<>();
     
-    public int numeroBits(int x){
-       int num = (int) ((Math.log(x))/(Math.log(2)));
-       return num+1;
+    private ArrayList<ArrayList<Object[]>> armar_variables_individuo(ArrayList<Object[]> sujetos)
+    {
+        ArrayList<ArrayList<Object[]>> IndividuosBinario = new ArrayList<>();
+        ArrayList<Object[]> individuo = new ArrayList<>();
+        int contador = 0;
+        int indice = 0;
+        Object[] variable = new Object[0];
+        for (Object[] sujeto : sujetos) {
+            individuo.clear();
+            inicio = 0;
+            fin = 0;
+            for (int i = 0; i < inicio_variable.size(); i++) {
+                if(i == 0){
+                    individuo.add(organizar_variable(sujeto, i, (int)inicio_variable.get(i), (int)inicio_variable.get(i)).clone());
+                    inicio = inicio + (int)inicio_variable.get(i);
+                    fin = inicio;
+                }
+                else
+                {
+                    fin = fin + (int)inicio_variable.get(i);
+                    individuo.add(organizar_variable(sujeto, inicio, fin, (int)inicio_variable.get(i)).clone());
+                    inicio = fin;
+                }
+            }
+            IndividuosBinario.add((ArrayList<Object[]>) individuo.clone());
+        }
+        return IndividuosBinario;
     }
     
-    private void adicionarPunto(Object[] individuo)
+    private Object[] organizar_variable(Object[] individuo, int infeior, int superior, int longitud)
+    {
+        Object [] caracteristica = new Object[longitud];
+        int contador = 0;
+        for (int i = infeior; i < superior; i++) {
+            caracteristica[contador] = individuo[i];
+            contador++;
+        }
+        return caracteristica;
+    }
+    
+    private int encontrarMayor(double[][] individuos, int indice)
+    {
+        double mayor = individuos[0][indice];
+        for (int i = 0; i < individuos.length; i++) {
+            if(individuos[i][indice] > mayor){
+                mayor = individuos[i][indice];
+            }
+        }
+        return (int)mayor;
+    }
+    
+    private int numeroBits(int x){
+        int num = 0;
+        if(x > 0){
+            num = (int) ((Math.log(x))/(Math.log(2)));
+        }
+        return num+1;
+    }
+    
+    private Object[] adicionarPunto(Object[] individuo)
     {
         Object[] nuevoIndividuo = new Object[individuo.length + puntos.size()];
         int cont = 0, cont2 = 0;
@@ -40,10 +95,11 @@ public class Cruce {
                 cont2++;
             }
         }
-        for (int i = 0; i < nuevoIndividuo.length; i++) {
+        /*for (int i = 0; i < nuevoIndividuo.length; i++) {
             System.out.print(nuevoIndividuo[i]);
         }
-        System.out.println(" ");
+        System.out.println(" ");*/
+        return nuevoIndividuo;
     }
     
     /*Organiza la nueva generación en un array de Object*/
@@ -60,10 +116,8 @@ public class Cruce {
         return nuevaGeneracion;
     }
     
-    public void recombinacion(double [][] muestra)
+    public double[][] recombinacion(double [][] muestra, int puntoCruce)
     {
-        
-        int tamañoMuestra = muestra.length;
         ArrayList<Object[]> newGeneracion = new ArrayList<>();
         this.ArmarIndividuo(muestra);
         int cont_madre = 0, cont = 0;
@@ -71,7 +125,7 @@ public class Cruce {
             for (Object[] Madre : IndividuoArmado) {
                 if(cont_madre <= 7)
                 {
-                    newGeneracion.add(Cruzar(Padre, Madre));
+                    newGeneracion.add(Cruzar(Padre, Madre, puntoCruce));
                     cont_madre++;
                     cont++;
                     if(cont_madre == 7)
@@ -85,20 +139,27 @@ public class Cruce {
                 }
             }
         }
-        for (Object[] individuo : newGeneracion) {
-            adicionarPunto(individuo);
+        ArrayList<Object[]> clonGeneracion = new ArrayList<>();
+        clonGeneracion = (ArrayList<Object[]>) newGeneracion.clone();
+        newGeneracion.clear();
+        for (Object[] individuo : clonGeneracion) {
+            newGeneracion.add(adicionarPunto(individuo).clone());
         }
-        //Object[][] nuevaGeneracion = organizarNuevaGeneracion(newGeneracion);
-        /*for (int i = 0; i < nuevaGeneracion.length; i++) {
-            for (int j = 0; j < nuevaGeneracion[i].length; j++) {
-                System.out.print(nuevaGeneracion[i][j]);
+        ArrayList<ArrayList<Object[]>> IndividuosConPropiedades = armar_variables_individuo(newGeneracion);
+        int i = 0, j = 0;
+        double [][] nuevaGeneracion = new double[muestra.length][7];
+        for (ArrayList<Object[]> Individuo : IndividuosConPropiedades) {
+            j = 0;
+            for (Object[] propiedad : Individuo) {
+                nuevaGeneracion[i][j] = conver.BinToDecDouble(propiedad);
+                j++;
             }
-            System.out.println(" ");
-        }*/
-        //return nuevaGeneracion;
+            i++;
+        }
+        return nuevaGeneracion;
     }
     
-    public Object[] Cruzar(Object [] padre, Object [] madre)
+    private Object[] Cruzar(Object [] padre, Object [] madre, int puntoCruce)
     {
         longitud = padre.length;
         Object[] hijo = new Object [longitud];
@@ -109,7 +170,7 @@ public class Cruce {
             if(bandera == true){
                 hijo[i] = padre[i];
                 contador++;
-                if(contador == 2){
+                if(contador == puntoCruce){
                     bandera = false;
                     contador = 0;
                 }
@@ -117,7 +178,7 @@ public class Cruce {
             else{
                 hijo[i] = madre[i];
                 contador++;
-                if(contador == 2)
+                if(contador == puntoCruce)
                 {
                     bandera = true;
                     contador = 0;
@@ -134,23 +195,52 @@ public class Cruce {
         
         ArrayList<ArrayList<Object[]>> ListAuxiliarIndividuos = new ArrayList<>();
         ArrayList<Object[]> auxiliarIndividuos = new ArrayList<>();
+        int numBitsDistancia = numeroBits(encontrarMayor(muestra, 0));
+        int numBitsTiempo = numeroBits(encontrarMayor(muestra, 1));
+        int numBitsPeaje = numeroBits(encontrarMayor(muestra, 2));
         
         /*Con este for recorro cada dato y lo convierto en binario y lo almaceno en el ArrayList*/
+        int con = 0;
         for (int i = 0; i < muestra.length; i++) {
             individuos.clear();
             for (int j = 0; j < muestra[i].length; j++) {
                 double decimal = muestra[i][j];
-                if(j == 0 || j == 1)
+                con++;
+                if(j == 0)
                 {
-                    individuos.add(conver.DecDoubleToBinlargo(decimal, 10));
+                    Object[] auxiliar = conver.DecDoubleToBinlargo(decimal, numBitsDistancia);
+                    individuos.add(auxiliar.clone());
+                    if(con <= 7)
+                    {
+                        inicio_variable.add(auxiliar.length);
+                    }
+                }
+                else if(j == 1)
+                {
+                    Object[] auxiliar = conver.DecDoubleToBinlargo(decimal, numBitsTiempo);
+                    individuos.add(auxiliar.clone());
+                    if(con <= 7)
+                    {
+                        inicio_variable.add(auxiliar.length);
+                    }
                 }
                 else if(j == 2)
                 {
-                    individuos.add(conver.convertEnteroToBinary(decimal, 4));
+                    Object[] auxiliar = conver.convertEnteroToBinary(decimal, numBitsPeaje);
+                    individuos.add(auxiliar.clone());
+                    if(con <= 7)
+                    {
+                        inicio_variable.add(auxiliar.length);
+                    }
                 }
                 else
                 {
-                    individuos.add(conver.DecDoubleToBin(decimal));
+                    Object[] auxiliar = conver.DecDoubleToBin(decimal);
+                    individuos.add(auxiliar);
+                    if(con <= 7)
+                    {
+                        inicio_variable.add(auxiliar.length);
+                    }
                 }
             }
             IndividuosBinario.add((ArrayList<Object[]>) individuos.clone());
@@ -234,15 +324,5 @@ public class Cruce {
             }
         }
         return longitud;
-    }
-        
-    public static void main(String[] args) {
-        AdministradorNodos admin = getAdministradorNodos();
-        admin.Star(1, 3);
-        double [][] poblacion = admin.getPoblacion();
-        Muestra muestra= new Muestra(poblacion);
-        double[][] m = muestra.muestra(10);
-        Cruce cru = new Cruce();
-        cru.recombinacion(m);
     }
 }

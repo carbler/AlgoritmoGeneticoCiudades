@@ -11,33 +11,6 @@ package AlgotimoGenetico;
  */
 public class Convertidor {
     
-    public static void main(String[] args) {
-        Convertidor aplication = new Convertidor();
-        double txt;
-        String binarionormal="" ;
-        String binariotruncado="" ;
-        double deci = 1.0;
-        int cont = 0;
-        /*Binario para el rango decimal de 0 - 2*/
-        Object[] binario = aplication.DecDoubleToBin(deci);
-        //Distancia y Tiempo
-        Object[] binariolargo = aplication.DecDoubleToBinlargo(deci, 10);
-        System.out.println("Numero entero: "+deci+"\n"+"Binario: ");
-        for(int i=0; i<binario.length;i++){
-            binarionormal = binarionormal+binario[i].toString();
-        }
-        System.out.println(binarionormal+"\n"+"binariorecortado: ");
-        for(int i=0; i<binariolargo.length;i++){
-            binariotruncado = binariotruncado+binariolargo[i].toString();
-        }
-        System.out.println(binariotruncado);
-        
-        Object[] b = aplication.convertEnteroToBinary(1.0,4);
-        for (int i = 0; i < b.length; i++) {
-            System.out.print(b[i]);
-        }
-    }
-    
     private static String invert(String str){
         String Ax="";
         for(int k=str.length()-1;k>=0;k--){
@@ -163,12 +136,22 @@ public class Convertidor {
         String decimaltemporal = "";
         String resultado;
         //Object[] numBinaryentero = Object[]
-        if(partEntera.length()<numbinary){
+        if(partEntera.length()< numbinary){
             int p = numbinary-partEntera.length();
             for(int i = 1; i <= p; i++){
                 sumceroentero = "0" + sumceroentero;
             }
             partEntera = sumceroentero + partEntera;
+        }else if(partEntera.length() > numbinary){
+            int cont = 0;
+            for(int i = partEntera.length()-1; i >= 0; i--){
+                if(cont < numbinary){
+                    sumceroentero = partEntera.charAt(i) + sumceroentero;
+                    cont += 1;
+                }
+                
+            }
+            partEntera = sumceroentero;
         }
         
         if(partDecimal.length() > 10){
@@ -186,7 +169,7 @@ public class Convertidor {
                 decimaltemporal = decimaltemporal + partDecimal.charAt(i);
             }
             
-          sumcerodecimal = sumcerodecimal + decimaltemporal;
+            sumcerodecimal = sumcerodecimal + decimaltemporal;
         }
         
         resultado = partEntera + "." + sumcerodecimal;
@@ -216,6 +199,11 @@ public class Convertidor {
         for(int i = 0; i < binary.length; i++){
             bin = bin + binary[i];    
         }
+        
+        if(validarNumero(binary) == false){
+            bin = bin + ".0";
+        } 
+        
         
         if(bin.equals("")) return Double.NaN;
         int signo=1;
@@ -254,7 +242,28 @@ public class Convertidor {
             }
             pos++;
         }
-        return (dec+fr)*signo;
+        double resultado = (dec+fr)*signo;
+        if(validarNumero(binary) == false){
+            String resultadovalido = String.valueOf(resultado);
+            String resultadofinal = "";
+            for(int i = 0; i < resultadovalido.length(); i++){
+                if(i < resultadovalido.length()- 2){
+                    resultadofinal = resultadofinal + resultadovalido.charAt(i);
+                }
+            }
+            resultado = Double.parseDouble(resultadofinal);
+        }
+        return resultado;
+    }
+    
+    private boolean validarNumero(Object[] binary){
+        boolean validacion = false;
+        for(int i = 0; i < binary.length; i++){
+            if(binary[i].equals(".")){
+               return validacion = true;
+            }    
+        }
+        return validacion;
     }
     
     public Object[] convertEnteroToBinary(double real, int numbinary){
